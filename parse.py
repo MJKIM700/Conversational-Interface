@@ -1,6 +1,8 @@
 import requests
 import nltk
 from bs4 import BeautifulSoup
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 
 # ingredient corpuses
 beans_and_legumes = ['black bean', 'black-eyed pea', 'cannellini bean', 'chickpea', 'fava bean', 'great northern bean', 'kidney bean', 'lentil bean', 'lima bean', 'pinto bean', 'soybean', 'edamame', 'white bean']
@@ -129,86 +131,6 @@ def parse_step(text, ingredients):
     
     return step
 
-# make_veg takes a parsed recipe dict and mutates it to replace meats with tofu
-def make_veg(ingredients, parsed_recipe):
-    for step_no in parsed_recipe.keys():
-        ingr = parsed_recipe[step_no]['ingredients']
-        for j in range(len(ingr)):
-            if any(MEAT in ingr[j] for MEAT in MEATS):
-                ingr[j] = 'tofu'
-    keys_to_remove = []
-    for key in ingredients.keys():
-        if any(MEAT in key for MEAT in MEATS):
-            keys_to_remove.append(key)
-    for key in keys_to_remove:
-        value = ingredients.pop(key)
-        ingredients['tofu'] = value
-            
-
-# Same thing but other way around
-def make_unveg(ingredients, parsed_recipe):
-    for step_no in parsed_recipe.keys():
-        ingr = parsed_recipe[step_no]['ingredients']
-        for j in range(len(ingr)):
-            if any(prot in ingr[j] for prot in VEG_PROTEINS):
-                ingr[j] = 'chicken'
-    keys_to_remove = []
-    for key in ingredients.keys():
-        if any(prot in key for prot in VEG_PROTEINS):
-            keys_to_remove.append(key)
-    for key in keys_to_remove:
-        value = ingredients.pop(key)
-        ingredients['chicken'] = value
-
-# For make healthy, cut quantities of unhealthy ingredients by 1/2
-# For make unhealthy, double such ingredients.
-# Input is ingredient dict for a recipe
-def make_healthy(ingredients):
-    for ingredient in ingredients.keys():
-        if any(unh in ingredient for unh in UNHEALTHY_ING):
-            ingredients[ingredient][0] = ingredients[ingredient][0]/2
-
-def make_unhealthy(ingredients):
-    for ingredient in ingredients.keys():
-        if any(unh in ingredient for unh in UNHEALTHY_ING):
-            ingredients[ingredient][0] = ingredients[ingredient][0]*2
-
-# Mutator that multiplies quantites in ingredients by scale factor
-def scale_ingredient(ingredients, scale_factor):
-    for ingredient in ingredients.keys():
-        if (ingredients[ingredient][0]):
-            ingredients[ingredient][0] *= scale_factor 
-
-def make_italian(ingredients, parsed_recipe):
-    for step_no in parsed_recipe.keys():
-        ingr = parsed_recipe[step_no]['ingredients']
-        for j in range(len(ingr)):
-            if any(carb in ingr[j] for carb in carbs):
-                ingr[j] = 'pasta'
-    keys_to_remove = []
-    for key in ingredients.keys():
-        if any(carb in key for carb in carbs):
-            keys_to_remove.append(key)
-    for key in keys_to_remove:
-        value = ingredients.pop(key)
-        ingredients['pasta'] = value
-
-def make_chinese(ingredients, parsed_recipe):
-    for step_no in parsed_recipe.keys():
-        ingr = parsed_recipe[step_no]['ingredients']
-        for j in range(len(ingr)):
-            if any(carb in ingr[j] for carb in carbs):
-                ingr[j] = 'rice'
-    keys_to_remove = []
-    for key in ingredients.keys():
-        if any(carb in key for carb in carbs):
-            keys_to_remove.append(key)
-    for key in keys_to_remove:
-        value = ingredients.pop(key)
-        ingredients['rice'] = value
-
-# test_strings = ['Bake the fish in a pan for 30 minutes!', 'Bring 2 cups of water to a boil in a large pot for 4 hours', 'Fry the chicken in the largest pan you have']
-
 fractiondict = {'½':0.5, '⅓':0.333, '⅔': 0.667, '¼':0.25, '¾':0.75, '⅝':0.625, '⅛':0.125, '⅜':0.375, '⅞':0.875, '1 ½':1.5}
 
 measures = ['tablespoon', 'teaspoon', 'pound', 'cup', 'ounce']
@@ -248,19 +170,11 @@ def parse_ingredient(ingredient):
         quantity = ''  
     return match, [quantity, measure, '']
 
-# parse_recipe takes a recipe (list of lists) and returns the fully populated ingredient and step dicts
+
 def parse_recipe(recipe):
     ingredients = parse_ingredients(recipe[1])
     steps = parse_steps(recipe[2], ingredients.keys())
     return ingredients, steps
-
-# ingredients structure: {ingredient name: [quantity, measurement, descriptors]}
-
-#print(ingredients, steps)
-#make_veg(ingredients, steps)
-#print(ingredients, steps)
-#make_unveg(ingredients, steps)
-#print(ingredients, steps)
 
 def make_human_readable_ingredients(ingredients):
     print('INGREDIENTS:')
@@ -285,40 +199,27 @@ def human_format(ingredients, steps):
     make_human_readable_ingredients(ingredients)
     make_human_readable_steps(steps)
 
-#p = load_page(URL)
-#recipe = extract_text(p)
-#print(recipe)
-#ingredients, steps = parse_recipe(recipe)
-#human_format(ingredients, steps)
+validate = URLValidator()
 
-# TO DO
-# Doubling and halving quantities
-# Unhealthy to healthy
-# 
+def validate_url(url):
+    try:
+        validate(url)
+        return 0
+    except ValidationError as exception:
+        return 1
+
+def initialize(url):
+        p = load_page(url)
+        recipe = extract_text(p)
+        ingredients, steps = parse_recipe(recipe)
+        return ingredients, steps
 
 if __name__ == "__main__":
     # execute only if run as a script
     recipe_link = input("enter recipe url: ")
-    p = load_page(recipe_link)
-    recipe = extract_text(p)
-    ingredients, steps = parse_recipe(recipe)
-    print("transformation options are vegetarian, non-vegetarian, healthy, unhealthy, scale ingredient, italian, chinese, none")
-    transform = input("enter desired transform: ")
-    print("transforming... " + transform)
-    if (transform == "vegetarian"):
-        make_veg(ingredients, steps)
-    if (transform == "non-vegetarian"):
-        make_unveg(ingredients, steps)
-    if (transform == "healthy"):
-        make_healthy(ingredients)
-    if (transform == "unhealthy"):
-        make_unhealthy(ingredients)
-    if (transform == "scale ingredient"):
-        scale = input("enter scale factor ")
-        scale = float(scale)
-        scale_ingredient(ingredients, scale)
-    if (transform == "italian"):
-        make_italian(ingredients, steps)
-    if (transform == "chinese"):
-        make_chinese(ingredients, steps)
-    human_format(ingredients, steps)
+    invalid = validate_url(recipe_link)
+    while invalid:
+        recipe_link = input("Invalid URL! Try entering it again.")
+        invalid = validate_url(recipe_link)
+    ingredients, steps = initialize(recipe_link)
+    print(ingredients, steps)
