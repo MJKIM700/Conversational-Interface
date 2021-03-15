@@ -214,6 +214,23 @@ def initialize(url):
         ingredients, steps = parse_recipe(recipe)
         return ingredients, steps
 
+def specific_question():
+    question = input('Enter a question: ')
+    # key_phrases = ["how do I ", "How do I ", "how do i ", "how to ", "How to "]
+    key_phrase = 'how do I '
+    look_up_phrase = question.partition(key_phrase)[2]
+    # add_pluses = look_up_phrase.split(' ').join('+')
+    for i in range(len(look_up_phrase)): 
+        if (look_up_phrase[i] == ' '): 
+            look_up_phrase = look_up_phrase.replace(look_up_phrase[i], '+') 
+
+    google_link = "https://www.google.com/search?q=how+to+" + look_up_phrase
+
+    print(google_link)
+
+
+
+
 if __name__ == "__main__":
     # execute only if run as a script
     recipe_link = input("enter recipe url: ")
