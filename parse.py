@@ -235,20 +235,21 @@ def parse_input(user_input):
 def check_exit():
     pass #TODO
 
-def ingredients_dump():
+def ingredients_dump(ingredients):
     pass #TODO
 
-def listener(name):
+def listener(name, ingredients, steps):
     exit = False
     previous_output = 'intro'
+    curr_step = 0
     while not exit:
         if previous_output == 'intro':
             user_input = input("Thanks for choosing " + name + ". Would you like to [1] go over the ingredients or [2] go over the recipe steps? ")
-            if user_input != '1' and user_input != '2':
+            while user_input != '1' and user_input != '2':
                 user_input = input("Invalid input! Try entering it again. Would you like to [1] go over the ingredients or [2] go over the recipe steps? ")
             if user_input == '1':
                 previous_output = 'ingredients'
-                ingredients_dump()
+                ingredients_dump(ingredients)
             if user_input == '2':
                 previous_output = 'recipe'
                 #TODO handle recipe
@@ -273,4 +274,4 @@ if __name__ == "__main__":
         invalid = validate_url(recipe_link)
     name, ingredients, steps = initialize(recipe_link)
     print(name, ingredients, steps)
-    listener(name)
+    listener(name, ingredients, steps)
