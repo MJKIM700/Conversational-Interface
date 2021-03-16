@@ -1,5 +1,5 @@
 # recipe-parser
-Project 2: Recipe Parser &amp; Interactive Cookbook
+Project 3: Conversational Interface
 
 dependencies:
 pip install -r requirements.txt
