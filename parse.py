@@ -211,8 +211,9 @@ def validate_url(url):
 def initialize(url):
         p = load_page(url)
         recipe = extract_text(p)
+        name = recipe[0]
         ingredients, steps = parse_recipe(recipe)
-        return ingredients, steps
+        return name, ingredients, steps
 
 def specific_question():
     question = input('Enter a question: ')
@@ -228,7 +229,39 @@ def specific_question():
 
     print(google_link)
 
+def parse_input(user_input):
+    pass #TODO
 
+def check_exit():
+    pass #TODO
+
+def ingredients_dump():
+    pass #TODO
+
+def listener(name):
+    exit = False
+    previous_output = 'intro'
+    while not exit:
+        if previous_output == 'intro':
+            user_input = input("Thanks for choosing " + name + ". Would you like to [1] go over the ingredients or [2] go over the recipe steps? ")
+            if user_input != '1' or user_input != '2':
+                user_input = input("Invalid input! Try entering it again. Would you like to [1] go over the ingredients or [2] go over the recipe steps? ")
+            if user_input == '1':
+                previous_output = 'ingredients'
+                ingredients_dump()
+            if user_input == '2':
+                previous_output = 'recipe'
+                #TODO handle recipe
+
+        if previous_output == 'ingredients':
+            user_input = input("Would you like me to go to the recipe steps? ")
+            previous_output = parse_input(user_input) #TODO parse_intput
+
+        if previous_output == 'recipe':
+            user_input = input("Would you like me to continue the recipe steps? ") #TODO add step number
+            previous_output = parse_input(user_input)  # TODO parse_intput
+
+        exit = check_exit() #TODO make exit conditions
 
 
 if __name__ == "__main__":
@@ -238,5 +271,6 @@ if __name__ == "__main__":
     while invalid:
         recipe_link = input("Invalid URL! Try entering it again.")
         invalid = validate_url(recipe_link)
-    ingredients, steps = initialize(recipe_link)
-    print(ingredients, steps)
+    name, ingredients, steps = initialize(recipe_link)
+    print(name, ingredients, steps)
+    listener(name)
