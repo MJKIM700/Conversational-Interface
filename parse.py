@@ -244,7 +244,7 @@ def listener(name):
     while not exit:
         if previous_output == 'intro':
             user_input = input("Thanks for choosing " + name + ". Would you like to [1] go over the ingredients or [2] go over the recipe steps? ")
-            if user_input != '1' or user_input != '2':
+            if user_input != '1' and user_input != '2':
                 user_input = input("Invalid input! Try entering it again. Would you like to [1] go over the ingredients or [2] go over the recipe steps? ")
             if user_input == '1':
                 previous_output = 'ingredients'
