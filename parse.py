@@ -236,7 +236,10 @@ def check_exit():
     pass #TODO
 
 def ingredients_dump(ingredients):
-    pass #TODO
+    print("The ingredients of this recipe are:")
+    for key in ingredients.keys():
+        value = ingredients[key]
+        print(str(value[0]) + ' ' + value[1] + ' ' + key)
 
 def listener(name, ingredients, steps):
     exit = False
@@ -274,4 +277,5 @@ if __name__ == "__main__":
         invalid = validate_url(recipe_link)
     name, ingredients, steps = initialize(recipe_link)
     print(name, ingredients, steps)
-    listener(name, ingredients, steps)
+    ingredients_dump(ingredients)
+    #listener(name, ingredients, steps)
