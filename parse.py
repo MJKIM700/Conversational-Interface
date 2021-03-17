@@ -21,12 +21,13 @@ nuts_and_seeds = ['chia seed', 'peanut', 'peanut butter', 'pecan', 'almond', 'fl
 shellfish = ['clam', 'crab', 'crawfish', 'lobster', 'mussel', 'octopus', 'squid', 'oyster', 'scallop', 'shrimp']
 vegetables = ['vegetable', 'artichoke', 'artichoke', 'asparagus', 'beet', 'bell pepper', 'bok choy', 'broccoli', 'brussels sprout', 'mushroom', 'green bean', 'corn', 'cucumber', 'eggplant', 'fennel', 'garlic', 'greens', 'green pea', 'pea', 'radish', 'rhubarb', 'sweet potato', 'tomato', 'tomatillo', 'nopales', 'turnip', 'snow pea', 'sugar snap pea', 'potato', 'squash', 'carrot', 'mixed vegetable', 'cauliflower', 'cabbage', 'leek', 'onion', 'parsnip', 'rutabaga', 'shallot', 'yam', 'water chestnut', 'jicama', 'okra', 'chile pepper', 'olive', 'celery root', 'celery']
 grain = ['barley', 'rice', 'buckwheat', 'bulgur', 'cornmeal', 'millet', 'oat', 'quinoa', 'spelt']
+pastas = ['spaghetti', 'linguine', 'penne', 'ziti', 'ditalini', 'elbows', 'farfalle', 'angel hair', 'pastina', 'fusilli', 'tortellini', 'ravioli', 'tagliatelle']
 carbs = grain + ['noodles', 'bread', 'tortillas', 'noodle', 'tortilla', 'pasta']
-misc = ['salt', 'black pepper', 'water', 'sugar', 'vinegar', 'ketchup', 'mustard', 'soy sauce', 'paste']
+misc = ['salt', 'black pepper', 'bread crumbs', 'water', 'sugar', 'vinegar', 'ketchup', 'mustard', 'soy sauce', 'paste']
 fish = ['salmon', 'cod', 'herring', 'mahi-mahi', 'mackerel', 'perch', 'rainbow trout', 'trout', 'sardines', 'bass',
 		'striped bass', 'tuna', 'shark', 'swordfish', 'grouper', 'haddock', 'halibut', 'mahi', 'albacore', 'carp',
 		'monkfish', 'snapper', 'sole', 'trout', 'rockfish', 'mullet', 'whitefish', 'saltfish', 'marlin', 'kingfish',
-		'torsk', 'bonito']
+		'torsk', 'bonito', "anchovies", "anchovy"]
 sauces = ['sauce', 'alfredo', 'alfredo sauce', 'chutney', 'mayonnaise', 'soy sauce', 'barbecue sauce',
 		'mushroom sauce', 'hot sauce', 'peanut sauce', 'hollandaise sauce', 'tomato sauce',
 		'pesto', 'agrodolce sauce', 'agrodolce', 'tkemali', 'tkemali sauce', 'tartar', 'tartar sauce',
@@ -38,7 +39,7 @@ sauces = ['sauce', 'alfredo', 'alfredo sauce', 'chutney', 'mayonnaise', 'soy sau
 
 MEATS = meat_and_poultry + wild_game + fish
 
-list_of_ingredients = beans_and_legumes + meat_and_poultry + wild_game + chocolate + oil + dairy + extracts + flours + fruit + herbs + spices + mushrooms + nuts_and_seeds + shellfish + vegetables + grain + misc + sauces + fish
+list_of_ingredients = beans_and_legumes + meat_and_poultry + wild_game + chocolate + oil + dairy + extracts + flours + fruit + herbs + spices + mushrooms + nuts_and_seeds + shellfish + vegetables + grain + misc + sauces + fish + pastas
 
 
 URL = 'https://www.allrecipes.com/recipe/17167/sicilian-spaghetti/'
@@ -106,6 +107,7 @@ def parse_step(text, ingredients):
     step['tools'] = []
     step['methods'] = []
     step['times'] = []
+    step['text'] = []
 
     # Tokenize and tag text using nltk
     tokens = nltk.word_tokenize(text)
@@ -128,6 +130,7 @@ def parse_step(text, ingredients):
             step['ingredients'].append(word)
         if word in ALL_METHODS:
             step['methods'].append(word)
+        step['text'] = text
     
     return step
 
@@ -232,15 +235,39 @@ def specific_question(question):
 
     return google_link
 
+def general_question(user_input, step):
+    lowered = user_input.lower()
+    key_phrases = ["how do i ", "how to "]
+
+    if "how do i " in lowered:
+        key_phrase="how do i "
+    else: key_phrase="how to "
+    tools = step['tools']
+    methods = step['methods']
+
+    google_link = "https://www.google.com/search?q=how+to"
+
+    for tool in tools:
+        google_link += '+' + tool
+    for method in methods:
+        google_link += '+' + method
+    
+    return google_link
+
+
+
+
+
 def parse_input(user_input, steps):
     global curr_step
     num_steps = len(steps)
     tokenizer = nltk.RegexpTokenizer(r"\w+")
     tokens = tokenizer.tokenize(user_input.lower())
     if 'how' in tokens:
-        if len(tokens) <= 4:
-            #TODO handle how do i do that?
-            pass
+        if len(tokens) <= 5:
+            link = general_question(user_input, steps[curr_step])
+            print("I found this reference for you: " + link)
+            return 'recipe'
         else:
             link = specific_question(user_input)
             print("I found this reference for you: " + link)
@@ -249,7 +276,7 @@ def parse_input(user_input, steps):
         if curr_step < num_steps:
             curr_step += 1
             print("Step " + str(curr_step) + ':')
-            print(steps[curr_step])
+            print(steps[curr_step]['text'])
             # check if last step
             if curr_step == num_steps:
                     print('That was the last step.')
@@ -269,7 +296,7 @@ def parse_input(user_input, steps):
             if curr_step < num_steps:
                 curr_step += 1
                 print("Step " + str(curr_step) + ':')
-                print(steps[curr_step])
+                print(steps[curr_step]['text'])
                 if curr_step == num_steps:
                     print('That was the last step.')
                     return "done"
@@ -282,7 +309,7 @@ def parse_input(user_input, steps):
             if curr_step >= 1:
                 curr_step -= 1
                 print("Step " + str(curr_step) + ':')
-                print(steps[curr_step])
+                print(steps[curr_step]['text'])
                 return 'recipe'
             else:
                 # error checking: cannot access a step below 1
@@ -294,7 +321,7 @@ def parse_input(user_input, steps):
             if target_step > 0 and target_step <= num_steps:
                 curr_step = int(tokens[idx+1])
                 print("Step " + str(curr_step) + ':')
-                print(steps[curr_step])
+                print(steps[curr_step]['text'])
                 if curr_step == num_steps:
                     print('That was the last step.')
                     return "done"
