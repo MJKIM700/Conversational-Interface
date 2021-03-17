@@ -179,29 +179,6 @@ def parse_recipe(recipe):
     steps = parse_steps(recipe[2], ingredients.keys())
     return ingredients, steps
 
-def make_human_readable_ingredients(ingredients):
-    print('INGREDIENTS:')
-    for i in ingredients:
-        for x in ingredients[i]:
-            if x!='':
-                print(x, end=" ")
-        print(i)
-
-def make_human_readable_steps(steps):
-    print('STEPS:')
-    for i in steps:
-        print(i)
-        for x in steps[i]:
-            print(x+':')
-            for t in steps[i][x]:
-                print(t)
-            print('\n')
-        print('\n')
-
-def human_format(ingredients, steps):
-    make_human_readable_ingredients(ingredients)
-    make_human_readable_steps(steps)
-
 validate = URLValidator()
 
 def validate_url(url):
@@ -390,24 +367,26 @@ def listener(name, ingredients, steps):
         
         if previous_output == 'exit':
             # When they enter "quit", exit is set to True
+            print('Glad to be of service. Hope I was helpful! Goodbye.')
             exit = True
+            break
 
         if previous_output == 'invalid':
             # Handles general invalid input. 
             user_input = input("Sorry, I didn't quite catch that. What did you say? ")
             previous_output = parse_input(user_input, steps)
 
-        exit = check_exit() #TODO make exit conditions
+        #exit = check_exit() #TODO make exit conditions
 
 
 if __name__ == "__main__":
     # execute only if run as a script
-    recipe_link = input("Hello! Please enter recipe url: ")
+    print("Hello! My name is Foodward, and I'm here to help you cook. Let's make something delicious!")
+    recipe_link = input("Please enter an AllRecipes.com recipe url: ")
     invalid = validate_url(recipe_link)
     while invalid:
         recipe_link = input("Invalid URL! Try entering it again: ")
         invalid = validate_url(recipe_link)
     name, ingredients, steps = initialize(recipe_link)
     #print(name, ingredients, steps)
-
     listener(name, ingredients, steps)
