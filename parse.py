@@ -264,7 +264,7 @@ def parse_input(user_input, steps):
     tokenizer = nltk.RegexpTokenizer(r"\w+")
     tokens = tokenizer.tokenize(user_input.lower())
     if 'how' in tokens:
-        if len(tokens) <= 5:
+        if "do that" in user_input:
             link = general_question(user_input, steps[curr_step])
             print("I found this reference for you: " + link)
             return 'recipe'
