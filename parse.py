@@ -215,8 +215,7 @@ def initialize(url):
         ingredients, steps = parse_recipe(recipe)
         return name, ingredients, steps
 
-def specific_question():
-    question = input('Enter a question: ')
+def specific_question(question):
     # key_phrases = ["how do I ", "How do I ", "how do i ", "how to ", "How to "]
     key_phrase = 'how do I '
     look_up_phrase = question.partition(key_phrase)[2]
@@ -227,16 +226,35 @@ def specific_question():
 
     google_link = "https://www.google.com/search?q=how+to+" + look_up_phrase
 
-    print(google_link)
+    return google_link
 
 def parse_input(user_input):
-    pass #TODO
+    tokenizer = nltk.RegexpTokenizer(r"\w+")
+    tokens = tokenizer.tokenize(user_input.lower())
+    if 'how' in tokens:
+        if len(tokens) <= 4:
+            #TODO handle how do i do that?
+            pass
+        else:
+            link = specific_question(user_input)
+            print("I found this reference for you: " + link)
+            return 'recipe'
+    if 'yes' in tokens:
+        #TODO handle recipe next step
+
+    if 'ingredients' in tokens:
+        return 'ingredients'
+    
+    if 'go' in tokens or 'take' in tokens:
+        pass #TODO navigation utterances
+
+
 
 def check_exit():
     pass #TODO
 
-def ingredients_dump(ingredients):
-    print("The ingredients of this recipe are:")
+def ingredients_dump(name, ingredients):
+    print("The ingredients of " + name + " recipe are:")
     for key in ingredients.keys():
         value = ingredients[key]
         print(str(value[0]) + ' ' + value[1] + ' ' + key)
@@ -244,20 +262,22 @@ def ingredients_dump(ingredients):
 def listener(name, ingredients, steps):
     exit = False
     previous_output = 'intro'
-    curr_step = 0
+    curr_step = 0 #for recipe
     while not exit:
         if previous_output == 'intro':
             user_input = input("Thanks for choosing " + name + ". Would you like to [1] go over the ingredients or [2] go over the recipe steps? ")
             while user_input != '1' and user_input != '2':
                 user_input = input("Invalid input! Try entering it again. Would you like to [1] go over the ingredients or [2] go over the recipe steps? ")
+            
             if user_input == '1':
                 previous_output = 'ingredients'
-                ingredients_dump(ingredients)
+                
             if user_input == '2':
                 previous_output = 'recipe'
                 #TODO handle recipe
 
         if previous_output == 'ingredients':
+            ingredients_dump(name, ingredients)
             user_input = input("Would you like me to go to the recipe steps? ")
             previous_output = parse_input(user_input) #TODO parse_intput
 
