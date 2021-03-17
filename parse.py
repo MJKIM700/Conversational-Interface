@@ -232,7 +232,9 @@ def specific_question(question):
 
     return google_link
 
-def parse_input(user_input):
+def parse_input(user_input, steps):
+    global curr_step
+    num_steps = len(steps)
     tokenizer = nltk.RegexpTokenizer(r"\w+")
     tokens = tokenizer.tokenize(user_input.lower())
     if 'how' in tokens:
@@ -244,15 +246,72 @@ def parse_input(user_input):
             print("I found this reference for you: " + link)
             return 'recipe'
     if 'yes' in tokens:
-        pass #TODO handle recipe next step
+        if curr_step < num_steps:
+            curr_step += 1
+            print("Step " + str(curr_step) + ':')
+            print(steps[curr_step])
+            # check if last step
+            if curr_step == num_steps:
+                    print('That was the last step.')
+                    return "done"
+            return 'recipe'
+        else:
+            return "invalid"
+
+    if 'no' in tokens:
+        return 'done'
 
     if 'ingredients' in tokens:
         return 'ingredients'
     
     if 'go' in tokens or 'take' in tokens:
-        pass #TODO navigation utterances
+        if 'next' in tokens:
+            if curr_step < num_steps:
+                curr_step += 1
+                print("Step " + str(curr_step) + ':')
+                print(steps[curr_step])
+                if curr_step == num_steps:
+                    print('That was the last step.')
+                    return "done"
+                return 'recipe'
+            else:
+                #error checking: cannot access a step above num_steps
+                print("There are no further steps.")
+                return "invalid step number"
+        elif 'previous' in tokens:
+            if curr_step >= 1:
+                curr_step -= 1
+                print("Step " + str(curr_step) + ':')
+                print(steps[curr_step])
+                return 'recipe'
+            else:
+                # error checking: cannot access a step below 1
+                print("There are no previous steps.")
+                return "invalid step number"
+        elif 'step' in tokens:
+            idx = tokens.index('step')
+            target_step = int(tokens[idx+1])
+            if target_step > 0 and target_step <= num_steps:
+                curr_step = int(tokens[idx+1])
+                print("Step " + str(curr_step) + ':')
+                print(steps[curr_step])
+                if curr_step == num_steps:
+                    print('That was the last step.')
+                    return "done"
+                return 'recipe'
+            else:
+                #error checking, step number outside bounds
+                return 'invalid step number'
+        else:
+            #triggers with a malformed step request
+            return 'invalid'
 
 
+    if 'quit' in tokens:
+        return 'exit'
+    
+    # general catch-all for malformed queries
+    return 'invalid'
 
 def check_exit():
     pass #TODO
@@ -263,10 +322,13 @@ def ingredients_dump(name, ingredients):
         value = ingredients[key]
         print(str(value[0]) + ' ' + value[1] + ' ' + key)
 
+# curr_step is now a global var
+curr_step = 0
+
 def listener(name, ingredients, steps):
     exit = False
     previous_output = 'intro'
-    curr_step = 0 #for recipe
+    global curr_step
     while not exit:
         if previous_output == 'intro':
             user_input = input("Thanks for choosing " + name + ". Would you like to [1] go over the ingredients or [2] go over the recipe steps? ")
@@ -277,29 +339,48 @@ def listener(name, ingredients, steps):
                 previous_output = 'ingredients'
                 
             if user_input == '2':
-                previous_output = 'recipe'
+                previous_output = parse_input('yes', steps)
                 #TODO handle recipe
 
         if previous_output == 'ingredients':
             ingredients_dump(name, ingredients)
             user_input = input("Would you like me to go to the recipe steps? ")
-            previous_output = parse_input(user_input) #TODO parse_intput
+            previous_output = parse_input(user_input, steps)
 
         if previous_output == 'recipe':
-            user_input = input("Would you like me to continue the recipe steps? ") #TODO add step number
-            previous_output = parse_input(user_input)  # TODO parse_intput
+            user_input = input("Would you like me to continue the recipe steps? ")
+            previous_output = parse_input(user_input, steps)
+
+        if previous_output == 'invalid step number':
+            # handles when a user attempts to navigate to an invalid step
+            user_input = input('You tried to access a step that does not exist. Try something else: ')
+            previous_output = parse_input(user_input, steps)
+        
+        if previous_output == 'done':
+            # Done with steps or user says "no" to a question
+            user_input = input("If you have any other requests, give them now. If not, respond with 'quit'. ")
+            previous_output = parse_input(user_input, steps)
+        
+        if previous_output == 'exit':
+            # When they enter "quit", exit is set to True
+            exit = True
+
+        if previous_output == 'invalid':
+            # Handles general invalid input. 
+            user_input = input("Sorry, I didn't quite catch that. What did you say? ")
+            previous_output = parse_input(user_input, steps)
 
         exit = check_exit() #TODO make exit conditions
 
 
 if __name__ == "__main__":
     # execute only if run as a script
-    recipe_link = input("enter recipe url: ")
+    recipe_link = input("Hello! Please enter recipe url: ")
     invalid = validate_url(recipe_link)
     while invalid:
-        recipe_link = input("Invalid URL! Try entering it again.")
+        recipe_link = input("Invalid URL! Try entering it again: ")
         invalid = validate_url(recipe_link)
     name, ingredients, steps = initialize(recipe_link)
-    print(name, ingredients, steps)
+    #print(name, ingredients, steps)
 
     listener(name, ingredients, steps)
