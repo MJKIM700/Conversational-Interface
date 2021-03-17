@@ -240,7 +240,7 @@ def parse_input(user_input):
             print("I found this reference for you: " + link)
             return 'recipe'
     if 'yes' in tokens:
-        #TODO handle recipe next step
+        pass #TODO handle recipe next step
 
     if 'ingredients' in tokens:
         return 'ingredients'
@@ -297,5 +297,5 @@ if __name__ == "__main__":
         invalid = validate_url(recipe_link)
     name, ingredients, steps = initialize(recipe_link)
     print(name, ingredients, steps)
-    ingredients_dump(ingredients)
-    #listener(name, ingredients, steps)
+
+    listener(name, ingredients, steps)
