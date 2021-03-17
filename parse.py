@@ -216,10 +216,14 @@ def initialize(url):
         return name, ingredients, steps
 
 def specific_question(question):
-    # key_phrases = ["how do I ", "How do I ", "how do i ", "how to ", "How to "]
-    key_phrase = 'how do I '
-    look_up_phrase = question.partition(key_phrase)[2]
-    # add_pluses = look_up_phrase.split(' ').join('+')
+    lowered = question.lower()
+    key_phrases = ["how do i ", "how to "]
+
+    if "how do i " in lowered:
+        key_phrase="how do i "
+    else: key_phrase="how to "
+    
+    look_up_phrase = lowered.partition(key_phrase)[2]
     for i in range(len(look_up_phrase)): 
         if (look_up_phrase[i] == ' '): 
             look_up_phrase = look_up_phrase.replace(look_up_phrase[i], '+') 
