@@ -219,8 +219,9 @@ def general_question(user_input, step):
     if "how do i " in lowered:
         key_phrase="how do i "
     else: key_phrase="how to "
-    tools = step['tools']
-    methods = step['methods']
+    tools = set(step['tools'])
+    methods = set(step['methods'])
+    ingredients = set(step['ingredients'])
 
     google_link = "https://www.google.com/search?q=how+to"
 
@@ -228,11 +229,13 @@ def general_question(user_input, step):
         google_link += '+' + tool
     for method in methods:
         google_link += '+' + method
+    for ing in ingredients:
+        google_link += '+' + ing
     
     return google_link
 
-
-
+# curr_step is now a global var
+curr_step = 0
 
 
 def parse_input(user_input, steps):
@@ -326,9 +329,6 @@ def ingredients_dump(name, ingredients):
         value = ingredients[key]
         print(str(value[0]) + ' ' + value[1] + ' ' + key)
 
-# curr_step is now a global var
-curr_step = 0
-
 def listener(name, ingredients, steps):
     exit = False
     previous_output = 'intro'
@@ -378,10 +378,9 @@ def listener(name, ingredients, steps):
 
         #exit = check_exit() #TODO make exit conditions
 
-
 if __name__ == "__main__":
     # execute only if run as a script
-    print("Hello! My name is Foodward, and I'm here to help you cook. Let's make something delicious!")
+    print("Hello! My name is CrockBot, and I'm here to help you cook like a pro. Let's make something delicious!")
     recipe_link = input("Please enter an AllRecipes.com recipe url: ")
     invalid = validate_url(recipe_link)
     while invalid:
