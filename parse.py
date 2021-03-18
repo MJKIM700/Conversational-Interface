@@ -234,6 +234,8 @@ def general_question(user_input, step):
     
     return google_link
 
+ordinal_dict = {'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5, 'sixth': 6, 'seventh': 7, 'eighth': 8}
+
 # curr_step is now a global var
 curr_step = 0
 
@@ -297,9 +299,18 @@ def parse_input(user_input, steps):
                 return "invalid step number"
         elif 'step' in tokens:
             idx = tokens.index('step')
-            target_step = int(tokens[idx+1])
+            potential_nums = [int(i) for i in tokens if i.isdigit()]
+            if len(potential_nums) == 0:
+                for token in tokens:
+                    if token in ordinal_dict:
+                        potential_nums = [ordinal_dict[token]]
+            if len(potential_nums) == 0:
+                potential_nums = [int(i[:-2]) for i in tokens if i[-2:] == 'th' or i[-2:] == 'rd' or i[-2:] == 'nd' or i[-2:] == 'st']
+            if len(potential_nums) == 0:
+                return 'invalid step number'
+            target_step = potential_nums[0]
             if target_step > 0 and target_step <= num_steps:
-                curr_step = int(tokens[idx+1])
+                curr_step = target_step
                 print("Step " + str(curr_step) + ':')
                 print(steps[curr_step]['text'])
                 if curr_step == num_steps:
