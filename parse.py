@@ -234,7 +234,7 @@ def general_question(user_input, step):
     
     return google_link
 
-ordinal_dict = {'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5, 'sixth': 6, 'seventh': 7, 'eighth': 8}
+ordinal_dict = {'first': 1, 'second': 2, 'third': 3, 'fourth': 4, 'fifth': 5, 'sixth': 6, 'seventh': 7, 'eighth': 8, 'ninth': 9, 'tenth': 10}
 
 # curr_step is now a global var
 curr_step = 0
@@ -257,7 +257,7 @@ def parse_input(user_input, steps):
     if 'yes' in tokens:
         if curr_step < num_steps:
             curr_step += 1
-            print("Step " + str(curr_step) + ':')
+            print("Step " + str(curr_step) + '/' + str(len(steps)) + ':')
             print(steps[curr_step]['text'])
             # check if last step
             if curr_step == num_steps:
@@ -277,7 +277,7 @@ def parse_input(user_input, steps):
         if 'next' in tokens:
             if curr_step < num_steps:
                 curr_step += 1
-                print("Step " + str(curr_step) + ':')
+                print("Step " + str(curr_step) + '/' + str(len(steps)) + ':')
                 print(steps[curr_step]['text'])
                 if curr_step == num_steps:
                     print('That was the last step.')
@@ -287,10 +287,10 @@ def parse_input(user_input, steps):
                 #error checking: cannot access a step above num_steps
                 print("There are no further steps.")
                 return "invalid step number"
-        elif 'previous' in tokens:
+        elif 'previous' in tokens or 'back' in tokens:
             if curr_step >= 1:
                 curr_step -= 1
-                print("Step " + str(curr_step) + ':')
+                print("Step " + str(curr_step) + '/' + str(len(steps)) + ':')
                 print(steps[curr_step]['text'])
                 return 'recipe'
             else:
@@ -311,7 +311,7 @@ def parse_input(user_input, steps):
             target_step = potential_nums[0]
             if target_step > 0 and target_step <= num_steps:
                 curr_step = target_step
-                print("Step " + str(curr_step) + ':')
+                print("Step " + str(curr_step) + '/' + str(len(steps)) + ':')
                 print(steps[curr_step]['text'])
                 if curr_step == num_steps:
                     print('That was the last step.')
@@ -331,8 +331,15 @@ def parse_input(user_input, steps):
     # general catch-all for malformed queries
     return 'invalid'
 
-def check_exit():
-    pass #TODO
+def ordinify(num):
+    if num % 10 == 1 and num != 11:
+        return str(num) + 'st'
+    elif num % 10 == 2 and num != 12:
+        return str(num) + 'nd'
+    elif num % 10 == 3 and num != 13:
+        return str(num) + 'rd'
+    else:
+        return str(num) + 'th'
 
 def ingredients_dump(name, ingredients):
     print("The ingredients of " + name + " recipe are:")
@@ -359,11 +366,14 @@ def listener(name, ingredients, steps):
 
         if previous_output == 'ingredients':
             ingredients_dump(name, ingredients)
-            user_input = input("Would you like me to go to the recipe steps? ")
+            if curr_step == 0:
+                user_input = input("Would you like me to start the recipe steps? ")
+            else:
+                user_input = input("Would you like me to continue to the " + ordinify(curr_step + 1) + " step? ")
             previous_output = parse_input(user_input, steps)
 
         if previous_output == 'recipe':
-            user_input = input("Would you like me to continue the recipe steps? ")
+            user_input = input("Would you like me to continue to the " + ordinify(curr_step + 1) + " step? ")
             previous_output = parse_input(user_input, steps)
 
         if previous_output == 'invalid step number':
@@ -387,7 +397,6 @@ def listener(name, ingredients, steps):
             user_input = input("Sorry, I didn't quite catch that. What did you say? ")
             previous_output = parse_input(user_input, steps)
 
-        #exit = check_exit() #TODO make exit conditions
 
 if __name__ == "__main__":
     # execute only if run as a script
