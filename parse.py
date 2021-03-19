@@ -288,7 +288,7 @@ def parse_input(user_input, steps):
                 print("There are no further steps.")
                 return "invalid step number"
         elif 'previous' in tokens or 'back' in tokens:
-            if curr_step >= 1:
+            if curr_step > 1:
                 curr_step -= 1
                 print("Step " + str(curr_step) + '/' + str(len(steps)) + ':')
                 print(steps[curr_step]['text'])
