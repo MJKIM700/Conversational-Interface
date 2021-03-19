@@ -8,4 +8,4 @@ pip install -r requirements.txt
 run 
 python parse.py
 
-main prompts for recipe url and desired transformation, outputs transformed recipe
+the console will interact with you! everything can be done in there
